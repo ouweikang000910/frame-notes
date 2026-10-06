@@ -13,11 +13,9 @@ VENV_PYTHON = ROOT / '.venv' / ('Scripts/python.exe' if os.name == 'nt' else 'bi
 
 
 def run(command: list[str], cwd: Path = ROOT) -> None:
-    # Windows npm is a .cmd wrapper and must run through cmd.exe.
-    if os.name == 'nt' and command[0].lower().endswith(('.cmd', '.bat')):
-        command = [os.environ.get('COMSPEC', 'cmd.exe'), '/d', '/c',
-                   '"' + command[0] + '" ' + subprocess.list2cmdline(command[1:])]
-    subprocess.run(command, cwd=cwd, check=True)
+    # Let subprocess quote the npm batch wrapper for cmd.exe on Windows.
+    batch = os.name == 'nt' and command[0].lower().endswith(('.cmd', '.bat'))
+    subprocess.run(command, cwd=cwd, check=True, shell=batch)
 
 
 def node_tools() -> tuple[str, str]:
