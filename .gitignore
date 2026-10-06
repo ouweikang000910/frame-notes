@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.venv/
+data/
+node_modules/
+frontend/dist/
+__pycache__/
+.pytest_cache/
+.DS_Store
+*.log
+*.tsbuildinfo
+.ruff_cache/
+.coverage
+htmlcov/
+releases/

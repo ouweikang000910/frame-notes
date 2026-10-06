@@ -1,0 +1,42 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install from locked dependencies and build
+        run: python scripts/bootstrap.py install
+      - name: Backend tests
+        if: runner.os != 'Windows'
+        run: .venv/bin/python -m pytest backend/tests -q
+      - name: Backend tests (Windows)
+        if: runner.os == 'Windows'
+        run: .venv/Scripts/python.exe -m pytest backend/tests -q
+      - name: Frontend type check
+        working-directory: frontend
+        run: npm run typecheck
